@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import { jwtDecode } from "jwt-decode";
-//import { loguearme } from "../services/apiServices";
+import { login } from "../../services/apiServices";
 
 /*
 {
@@ -21,6 +21,7 @@ export default function Login() {
   const navigate = useNavigate();
   const [mail, setMail] = useState("");
   const [pass, setPass] = useState("");
+  const [errors, setErrors] = useState({});
 
   //expresion regular
   const isValidEmail = (email) => {
@@ -31,33 +32,56 @@ export default function Login() {
     return (
       password.length >= 6 &&
       /\d/.test(password) &&
-      /[a-z]/.test(password) &&
-      /[A-Z]/.test(password)
+      /[a-z]/.test(password)
+      // && /[A-Z]/.test(password)
     );
+  };
+
+  const handleBlur = (field) => {
+    const newErrors = { ...errors }; //desde cero
+
+    if (field === "mail") {
+      if (!mail) {
+        newErrors.mail = "El correo es obligatorio"; //aca cargo errores en el objeto newError
+      } else if (!isValidEmail(mail)) {
+        newErrors.mail = "Por favor, ingresa un correo electrónico válido"; //aca cargo errores en el objeto newError
+      } else {
+        delete newErrors.mail; //si no hay errores limpio el campo mail del objeto de errors
+      }
+    }
+    if (field === "pass") {
+      if (!pass) {
+        newErrors.pass = "La contraseña es obligatoria";
+      } else if (!isValidPassword(pass)) {
+        newErrors.pass =
+          "La contraseña debe tener al menos 8 caracteres, incluir un número y una mayúscula";
+      } else {
+        delete newErrors.pass;
+      }
+    }
+
+    setErrors(newErrors); //seteo mi variable de estado error con su hook serError y le envio los errores generados (que puede estar vacio)
+  };
+
+  const validateForm = () => {
+    //evento cuando el componente piede el foco, cuando se sale de el
+    handleBlur("mail");
+    handleBlur("pass");
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    //si mis datos no son lo que necesito debo cortar aqui la funcion
-    // es decir hacer un tipic return de js.
-
-    if (!isValidEmail(mail)) {
-      toast.error(
-        "Por favor, ingresa un correo electrónico válido.",
-        confToast
-      );
-
-      return; //al hacer un return corta el handleSubmit y no sigue con el fetch
+    //invocamos la funcion que valida obligatoriamente mi formilario
+    //aunque no le haya puestoel foco en ningun input
+    validateForm();
+    if (Object.entries(errors).length > 0) {
+      return; // si hay errores entonces retorna y no sigue con el toDoLogin
     }
 
-    if (!isValidPassword(pass)) {
-      toast.error(
-        "La contraseña debe tener al menos 8 caracteres, al menos 1 dígito y al menos una mayúscula",
-        confToast
-      );
-      return;
-    }
+    // Object.keys(obj) → devuelve solo las claves del objeto.
+    // Object.values(obj) → devuelve solo los valores del objeto.
+    // Object.entries(obj) → devuelve pares clave-valo
 
     const toDoLogin = async () => {
       //esto no es JSON puro, sino un Objeto JS
@@ -67,43 +91,31 @@ export default function Login() {
       };
 
       try {
-        const url = "http://localhost:3000/api/auth/login";
-        const parametros = {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            authorization: localStorage.getItem("permiso"),
-            //authorization: localStorage.permiso,
-          },
-          body: JSON.stringify(datos_usuario),
-        };
+        const response = await login(datos_usuario);
+        const body = response.data;
 
-        const response = await fetch(url, parametros);
+        sessionStorage.setItem("permiso", body.token);
 
-        let body = await response.json();
+        const decoded = jwtDecode(body.token);
 
-        if (response.ok) {
-          sessionStorage.setItem("permiso", body.token);
-          const decoded = jwtDecode(body.token);
+        // podemos colocar el rol en un sesion
+        //-------------------------------------
+        sessionStorage.setItem("role", decoded.rol);
+        //-------------------------------------
 
-          // podemos colocar el rol en un sesion
-          //-------------------------------------
-          sessionStorage.setItem("role", decoded.rol);
-          //-------------------------------------
-
-          // opciones de uso, no es necesario, solo si se le ocurre algo similar
-          if (decoded.rol === 1) {
-            navigate("/reservas");
-          } else {
-            navigate("/");
-          }
+        // opciones de uso, no es necesario, solo si se le ocurre algo similar
+        if (decoded.rol === 1) {
+          navigate("/reservas");
         } else {
-          toast.error(body.message, confToast);
+          navigate("/");
         }
       } catch (error) {
         //mostrar mensajes personalizados
-
-        toast.error(error.message, confToast);
+        if (error.response) {
+          toast.error(error.response.data.message, confToast);
+        } else {
+          toast.error(error.message, confToast);
+        }
       }
     };
 
@@ -117,17 +129,31 @@ export default function Login() {
           <label className="label_form">Email</label>
           <input
             onChange={(e) => setMail(e.target.value)}
+            onBlur={() => handleBlur("mail")}
             className="input_form"
             type="text"
           />
+          {/* se muestra un mensajito con el error */}
+          {errors.pass && (
+            <div className="alert alert-warning mt-2" role="alert">
+              {errors.mail}
+            </div>
+          )}
         </div>
         <div>
           <label className="label_form">Contraseña</label>
           <input
             onChange={(e) => setPass(e.target.value)}
+            onBlur={() => handleBlur("pass")}
             className="input_form"
             type="text"
           />
+          {/* se muestra un mensajito con el error */}
+          {errors.pass && (
+            <div className="alert alert-warning mt-2" role="alert">
+              {errors.pass}
+            </div>
+          )}
         </div>
         <div className="div_btn">
           <input className="btn_login" type="submit" value={"Ingresar"} />

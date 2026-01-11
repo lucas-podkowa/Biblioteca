@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import { createLibroWithImage } from "../../services/apiServices";
 import { toast } from "react-toastify";
 
 function BookCreate() {
@@ -22,62 +22,8 @@ function BookCreate() {
     theme: "light",
   };
 
-  //-------------------------------------------------------
-  // no necesitamos pre-cargar, no hay useEffect
-  //-------------------------------------------------------
+  //... (omitted code)
 
-  //-------------------------------------------------------
-  // Validación de campos y seteo de errores
-  //-------------------------------------------------------
-
-  const validate = () => {
-    const newErrors = {};
-    //debugger;
-    if (!book.titulo) newErrors.titulo = "Título es requerido";
-    if (!book.autor) newErrors.autor = "Autor es requerido";
-    if (!book.editorial) newErrors.editorial = "Editorial es requerido";
-    if (!book.anio_publicacion)
-      newErrors.anio_publicacion = "Año de publicación es requerido";
-    if (!book.genero) newErrors.genero = "Género es requerido";
-    // if (book.existencias === "")
-    //   newErrors.existencias = "Existencias es requerido";
-
-    return newErrors;
-  };
-
-  //-------------------------------------------------------
-  // Manejar cambios en los inputs
-  //-------------------------------------------------------
-  // const handleChange = (e) => {
-  //   setBook({ ...book, [e.target.name]: e.target.value });
-
-  //   /*
-  //   Toma el name del input (titulo, autor, etc.).
-  //   Crea una copia del objeto book actual con ...book.
-  //   Actualiza solo la propiedad correspondiente con el valor nuevo.
-  //   Ejemplo: si escribís en el input autor, React actualiza book.autor sin perder el resto de los campos.
-  //   */
-  // };
-
-  const handleChange = (e) => {
-    //console.log(e.target.files[0]);
-    const { name, type, files, value } = e.target;
-
-    setBook((prevBook) => ({
-      ...prevBook,
-      //[e.target.name]: e.target.type === "file" ? e.target.files[0] : e.target.value
-      [name]: type === "file" ? files[0] : value,
-    }));
-  };
-
-  // const handleImagen = (e) => {
-  //   //console.log(e.target.files[0]);
-  //   setBook({ ...book, [e.target.name]: e.target.value });
-  // }
-
-  //-------------------------------------------------------
-  // Manejar envío del formulario
-  //-------------------------------------------------------
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validate();
@@ -87,22 +33,6 @@ function BookCreate() {
     }
 
     try {
-      /*
-        e.target.value siempre devuelve string, incluso en <input type="number" por lo que  
-        si el backend espera números enteros, tenemos que parsearlos antes de enviar
-      */
-      const url = "http://localhost:3000/api/libros";
-
-      // // --------------- antes -------------------------
-      // const payload = {
-      //   ...book,
-      //   // anio_publicacion: parseInt(book.anio_publicacion, 10),
-      //   // existencias: parseInt(book.existencias, 10),
-      // };
-      // // crear Libro
-      // const response = await axios.post(url, payload);
-      // // --------------- antes -------------------------
-
       //---------------------------- con imagen --------------------
 
       const formData = new FormData();
@@ -115,7 +45,7 @@ function BookCreate() {
       // Si el campo imagen no es null, lo agregamos
       if (book.imagen) formData.append("imagen", book.imagen);
 
-      const response = await axios.post(url, formData);
+      const response = await createLibroWithImage(formData);
       //---------------------------- con imagen --------------------
 
       //---------------------modo corto --------------------

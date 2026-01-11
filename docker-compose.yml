@@ -13,9 +13,12 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - PORT=3000
-      - DATABASE_URL=postgres://user:password@db:5432/biblioteca
-      # Add other env vars here or use an env_file
+      - APP_PORT=3000
+      - PGHOST=db
+      - PGUSER=user
+      - PGPASSWORD=password
+      - PGDATABASE=biblioteca
+      - PGPORT=5432
     depends_on:
       db:
         condition: service_healthy
@@ -23,7 +26,7 @@ services:
       - app-network
 
   db:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     environment:
       - POSTGRES_USER=user
       - POSTGRES_PASSWORD=password
@@ -31,7 +34,7 @@ services:
     volumes:
       - db-data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d biblioteca"]
+      test: [ "CMD-SHELL", "pg_isready -U user -d biblioteca" ]
       interval: 10s
       timeout: 5s
       retries: 5

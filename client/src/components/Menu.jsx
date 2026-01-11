@@ -30,11 +30,12 @@ function Menu() {
   //   }
   // });
 
-  // const logout = () => {
-  //   sessionStorage.removeItem("permiso");
-  //   setToken("");
-  //   navigate("/");
-  // };
+  const logout = () => {
+    sessionStorage.removeItem("permiso");
+    sessionStorage.removeItem("token");
+    sessionStorage.removeItem("role");
+    navigate("/");
+  };
 
   const token = sessionStorage.getItem("token");
   if (token !== "" && token !== null) {
@@ -97,8 +98,16 @@ function Menu() {
       <header>
         <nav className="menu-principal">
           <ul className="menu-lista">
-            <li className="login-btn">
-              <Link to="/login">Login</Link>
+            <li className="brand">
+              <Link to="/">Biblioteca</Link>
+            </li>
+            <li className="auth-links">
+              <Link to="/login" className="auth-btn login">
+                Iniciar Sesión
+              </Link>
+              <Link to="/register" className="auth-btn register">
+                Registrarse
+              </Link>
             </li>
           </ul>
         </nav>

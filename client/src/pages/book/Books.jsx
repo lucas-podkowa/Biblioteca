@@ -2,7 +2,7 @@ import "./../../styles/misEstilos.css";
 import { Outlet, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BookCard from "./../../components/BookCard";
-import axios from "axios";
+import { getLibros } from "../../services/apiServices";
 
 function Books() {
   const [books, setBooks] = useState([]);
@@ -14,12 +14,7 @@ function Books() {
   useEffect(() => {
     async function fetchBooks() {
       try {
-        // const query = new URLSearchParams({ searchTerm }).toString();
-        // const response = await fetch(`http://localhost:3000/api/libros?${query}`);
-
-        const response = await axios.get("http://localhost:3000/api/libros", {
-          params: { searchTerm }, // pasamos el searchTerm como query param
-        });
+        const response = await getLibros(searchTerm);
 
         console.log(response.data);
         setBooks(response.data);
@@ -69,16 +64,16 @@ function Books() {
         {/* hort-circuit evaluation (&&) */}
         {(Number(sessionStorage.getItem("role")) === 1 ||
           Number(sessionStorage.getItem("role")) === 2) && (
-          <div>
-            <Link to="/libro/crear" className="btn-crear-libro">
-              Nuevo Libro
-            </Link>
-          </div>
-        )}
+            <div>
+              <Link to="/libro/crear" className="btn-crear-libro">
+                Nuevo Libro
+              </Link>
+            </div>
+          )}
 
         {/* operador ternario (condición ? verdadero : falso) */}
         {Number(sessionStorage.getItem("role")) === 1 ||
-        Number(sessionStorage.getItem("role")) === 2 ? (
+          Number(sessionStorage.getItem("role")) === 2 ? (
           <div>
             <Link to="/libro/crear" className="btn-crear-libro">
               Nuevo Libro

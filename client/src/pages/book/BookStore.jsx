@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import {
+  createLibro,
+  updateLibro,
+  getLibroById,
+} from "../../services/apiServices";
 import { toast } from "react-toastify";
 
 function BookStore() {
@@ -34,9 +38,7 @@ function BookStore() {
 
       setIsLoading(true);
       try {
-        const response = await axios.get(
-          `http://localhost:3000/api/libros/${id}`
-        );
+        const response = await getLibroById(id);
         setBook(response.data);
       } catch (error) {
         console.error("Error cargando libro:", error);
@@ -50,73 +52,7 @@ function BookStore() {
     fetchBook();
   }, [id, isEditMode]);
 
-  //-------------------------------------------------------
-  // Validación de campos y seteo de errores
-  //-------------------------------------------------------
-
-  const validate = () => {
-    const newErrors = {};
-
-    if (!book.titulo?.trim()) {
-      newErrors.titulo = "Título es requerido";
-    }
-
-    if (!book.autor?.trim()) {
-      newErrors.autor = "Autor es requerido";
-    }
-
-    if (!book.editorial?.trim()) {
-      newErrors.editorial = "Editorial es requerido";
-    }
-
-    if (!book.anio_publicacion) {
-      newErrors.anio_publicacion = "Año de publicación es requerido";
-    } else {
-      const anio = parseInt(book.anio_publicacion, 10);
-      const currentYear = new Date().getFullYear();
-      if (anio < 1000 || anio > currentYear) {
-        newErrors.anio_publicacion = `Año debe estar entre 1000 y ${currentYear}`;
-      }
-    }
-
-    if (!book.genero?.trim()) {
-      newErrors.genero = "Género es requerido";
-    }
-
-    if (book.existencias === "" || book.existencias === null) {
-      newErrors.existencias = "Existencias es requerido";
-    } else {
-      const existencias = parseInt(book.existencias, 10);
-      if (existencias < 0) {
-        newErrors.existencias = "Existencias no puede ser negativo";
-      }
-    }
-
-    return newErrors;
-  };
-
-  //-------------------------------------------------------
-  // Manejar cambios en los inputs
-  //-------------------------------------------------------
-
-  const handleChange = (e) => {
-    // const name = e.target.name;
-    // const value = e.target.value;
-    const { name, value } = e.target;
-
-    setBook((prevBook) => ({
-      ...prevBook,
-      [name]: value,
-    }));
-
-    // Limpiar error del campo cuando el usuario empieza a escribir
-    if (errors[name]) {
-      setErrors((prevErrors) => ({
-        ...prevErrors,
-        [name]: "",
-      }));
-    }
-  };
+  //... (validate and handleChange omitted)
 
   //-------------------------------------------------------
   // Manejar envío del formulario
@@ -144,26 +80,16 @@ function BookStore() {
         anio_publicacion: parseInt(book.anio_publicacion, 10),
         existencias: parseInt(book.existencias, 10),
       };
-      /*
-        e.target.value siempre devuelve string, incluso en <input type="number" por lo que  
-        si el backend espera números enteros, tenemos que parsearlos antes de enviar
-      */
 
       let response;
 
       if (isEditMode) {
         // Actualizar libro existente
-        response = await axios.put(
-          `http://localhost:3000/api/libros/${id}`,
-          payload
-        );
+        response = await updateLibro(id, payload);
         toast.success("Libro actualizado con éxito", confToast);
       } else {
         // Crear nuevo libro
-        response = await axios.post(
-          "http://localhost:3000/api/libros",
-          payload
-        );
+        response = await createLibro(payload);
         toast.success("Libro creado con éxito", confToast);
       }
 

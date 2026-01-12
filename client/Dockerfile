@@ -14,6 +14,10 @@ RUN npm ci
 # Copia el resto del código del frontend
 COPY . .
 
+# Argumentos de construcción (Build Args) para inyectar variables de entorno de Vite
+ARG VITE_API_BASE_URL
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+
 # Ejecuta el script de construcción para generar los archivos estáticos (en la carpeta /dist)
 RUN npm run build
 

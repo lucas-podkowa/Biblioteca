@@ -9,7 +9,4 @@ export const pool = new Pool({
     password: process.env.PGPASSWORD,
     database: process.env.PGDATABASE,
     port: process.env.PGPORT || 5432,
-    ssl: {
-        rejectUnauthorized: false // Necesario para la conexión segura con Supabase
-    }
 });

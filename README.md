@@ -66,3 +66,22 @@ El proyecto está dividido en dos directorios principales:
 
 ## Autores
 Desarrollado como parte de un proyecto de gestión de bibliotecas.
+
+## Docker y CI/CD
+
+El proyecto cuenta con una configuración para despliegue automatizado utilizando GitHub Actions y paquetes de Docker.
+
+### Pipeline de CI/CD
+El flujo de trabajo se encuentra en `.github/workflows/ci-cd.yml` y realiza lo siguiente:
+1. **CI (Integración Continua)**: En cada Pull Request a `main`, se instalan dependencias, se ejecuta el linter y se verifica que el cliente compile correctamente.
+2. **CD (Despliegue Continuo)**: Al hacer push a la rama `main`:
+   - Construye las imágenes Docker para `client` y `server`.
+   - Las sube al **GitHub Container Registry (GHCR)**.
+
+### Variables de Entorno en GitHub
+Para que el cliente se construya apuntando a la API de producción correcta en el pipeline, debes configurar el secreto en el repositorio de GitHub:
+- Ve a **Settings > Secrets and variables > Actions**.
+- Crea un **New repository secret**.
+- Nombre: `VITE_API_BASE_URL`
+- Valor: La URL pública de tu backend desplegado (ejemplo: `https://api.tu-dominio.com/api`).
+

@@ -56,7 +56,6 @@ const userModel = {
         return null;
         //throw new Error(`Usuario no encontrado con el mail : ${mail}`);
       }
-      //si no saltó el error en el if anterior entoces se devuelve el resultado
       return rows[0];
     } catch (error) {
       console.error(`Error fetching user with email ${mail}:`, error);

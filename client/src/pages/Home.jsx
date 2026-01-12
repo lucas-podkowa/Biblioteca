@@ -1,7 +1,7 @@
 function Home() {
   return (
     <>
-      <section className="home-page">
+      <section>
         <h1>Página de Inicio</h1>
       </section>
 

@@ -7,13 +7,9 @@ import About from "./pages/About";
 import Loan from "./pages/Loan";
 import Footer from "./components/Footer";
 import NotFound from "./pages/NotFound";
-import Libros from "./pruebas/map";
-import Gancho from "./pruebas/Gancho";
 import Register from "./pages/auth/Register";
-import Articulos from "./pruebas/Articulos";
 import Usuarios from "./pages/auth/Usuarios";
 import Login from "./pages/auth/Login";
-import AxiosPosts from "./pruebas/AxiosPost";
 
 // importacion de libros
 import Books from "./pages/book/Books";
@@ -33,12 +29,7 @@ function App() {
           <Route path="/" element={<Home />}></Route>
           <Route path="/login" element={<Login />}></Route>
           <Route path="/register" element={<Register />}></Route>
-          <Route path="/articulos" element={<Articulos />}></Route>
           <Route path="/usuarios" element={<Usuarios />}></Route>
-          <Route path="/testmap" element={<Libros />}></Route>
-          <Route path="/gancho" element={<Gancho />}></Route>
-
-          <Route path="/articulos_axios" element={<AxiosPosts />}></Route>
 
           <Route path="/libro/crear" element={<BookCreate />} />
           <Route path="/libro/editar/:id" element={<BookEdit />}></Route>

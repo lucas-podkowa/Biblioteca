@@ -29,9 +29,9 @@ const userModel = {
 
   create: async (user) => {
     try {
-      const { nombre, apellido, mail, contrasenia, id_rol = 3 } = user; // Default role to 'Lector'
+      const { nombre, apellido, mail, pass, id_rol = 3 } = user; // Default role to 'Lector'
       //ciframos la clave para que no se guarde como texto plano
-      const hashedPassword = await bcrypt.hash(contrasenia, 10);
+      const hashedPassword = await bcrypt.hash(pass, 10);
       const query =
         "INSERT INTO usuario (nombre, apellido, mail, contrasenia, id_rol) VALUES ($1, $2, $3, $4, $5) RETURNING id_usuario";
       const { rows } = await pool.query(query, [
@@ -63,24 +63,6 @@ const userModel = {
       throw new Error(
         `Could not fetch user with email ${mail} from the database.`
       );
-    }
-  },
-
-  //un metodo que utiliza la funcion del login para saber si existe ese usuario o no
-  findByMail: async (mail) => {
-    try {
-      // NOTE: Ajuste de consulta SQL, JOIN explicito no es necesario si solo chequeamos usuario, pero mantengo logica o simplifico.
-      // La consulta original hacía un JOIN con 'persona', pero 'persona' no existe en el esquema mostrado anteriormente (ni en el nuevo).
-      // El esquema original solo tenia 'usuario'. Asumo que la consulta original estaba mal o era de una version vieja.
-      // Usare la misma logica simple de findByEmail.
-      const query = "SELECT * FROM usuario WHERE mail = $1";
-      const { rows } = await pool.query(query, [mail]);
-      if (rows.length == 0) {
-        throw new Error(`Usuario no encontrado con el mail : ${mail}`);
-      }
-      return rows; //si no saltó el error en el if anterior entoces se devuelve el resultado
-    } catch (error) {
-      throw new Error(error.message);
     }
   },
 

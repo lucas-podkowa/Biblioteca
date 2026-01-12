@@ -31,7 +31,6 @@ function Menu() {
   // });
 
   const logout = () => {
-    sessionStorage.removeItem("permiso");
     sessionStorage.removeItem("token");
     sessionStorage.removeItem("role");
     navigate("/");
@@ -63,15 +62,6 @@ function Menu() {
               </li>
             ) : null} */}
 
-            <li>
-              <Link to="/gancho">Hook</Link>
-            </li>
-            <li>
-              <Link to="/articulos_axios">Articulos (Axios)</Link>
-            </li>
-            <li>
-              <Link to="/articulos">Artiulos (fetch)</Link>
-            </li>
             <li>
               <Link to="/usuarios">Usuarios</Link>
             </li>

@@ -94,7 +94,7 @@ export default function Login() {
         const response = await login(datos_usuario);
         const body = response.data;
 
-        sessionStorage.setItem("permiso", body.token);
+        sessionStorage.setItem("token", body.token);
 
         const decoded = jwtDecode(body.token);
 

@@ -14,9 +14,7 @@ function Books() {
   useEffect(() => {
     async function fetchBooks() {
       try {
-        const response = await getLibros(searchTerm);
-
-        console.log(response.data);
+        const response = await getLibros();
         setBooks(response.data);
         setAllBooks(response.data);
       } catch (error) {
@@ -32,8 +30,7 @@ function Books() {
   // Filtramos localmente cada vez que cambia el término de búsqueda
   useEffect(() => {
     if (searchTerm.trim() === "") {
-      setBooks(books);
-      console.log(books);
+      setBooks(allBooks);
     } else {
       const filtered = allBooks.filter((libro) =>
         libro.titulo.toLowerCase().includes(searchTerm.toLowerCase())

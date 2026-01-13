@@ -13,14 +13,14 @@ export default function BookCard({ book }) {
       const decoded = jwtDecode(t);
       setRol(decoded.rol);
     }
-  });
+  }, []);
 
   // Desestructuración del objeto recibido
   const { id_libro, titulo, autor, editorial, image_url } = book;
   const navigate = useNavigate();
 
   const handleClic = () => {
-    navigate(`/libros/${id}`);
+    navigate(`/libros/${id_libro}`);
   };
 
   return (

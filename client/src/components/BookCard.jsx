@@ -20,7 +20,7 @@ export default function BookCard({ book }) {
   const navigate = useNavigate();
 
   const handleClic = () => {
-    // navigate(`/libros/${id}`);
+    navigate(`/libros/${id}`);
   };
 
   return (

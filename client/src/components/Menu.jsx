@@ -1,12 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+//import { useEffect, useState } from "react";
 import "./Menu.css";
-import { jwtDecode } from "jwt-decode";
+//import { jwtDecode } from "jwt-decode";
 
 function Menu() {
   const navigate = useNavigate();
   // const [token, setToken] = useState("");
-  const [rol, setRol] = useState("");
+  // const [rol, setRol] = useState("");
 
   // useEffect(() => {
   //   const t = sessionStorage.getItem("permiso");

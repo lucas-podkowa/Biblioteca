@@ -7,6 +7,12 @@ import {
 } from "../../services/apiServices";
 import { toast } from "react-toastify";
 
+const confToast = {
+  position: "bottom-center",
+  autoClose: 1000,
+  theme: "light",
+};
+
 function BookStore() {
   // Si hay ID, es edición; si no, es creación
   const { id } = useParams();
@@ -22,12 +28,6 @@ function BookStore() {
     existencias: "",
   });
   const isEditMode = Boolean(id);
-
-  const confToast = {
-    position: "bottom-center",
-    autoClose: 1000,
-    theme: "light",
-  };
 
   //-------------------------------------------------------
   // Cargar datos del libro si estamos en modo edición
@@ -50,9 +50,24 @@ function BookStore() {
     };
 
     fetchBook();
-  }, [id, isEditMode]);
+  }, [id, isEditMode, navigate]);
 
-  //... (validate and handleChange omitted)
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBook({ ...book, [name]: value });
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!book.titulo) newErrors.titulo = "El título es obligatorio";
+    if (!book.autor) newErrors.autor = "El autor es obligatorio";
+    if (!book.editorial) newErrors.editorial = "La editorial es obligatoria";
+    if (!book.anio_publicacion)
+      newErrors.anio_publicacion = "El año de publicación es obligatorio";
+    if (!book.genero) newErrors.genero = "El género es obligatorio";
+    if (!book.existencias) newErrors.existencias = "Las existencias son obligatorias";
+    return newErrors;
+  };
 
   //-------------------------------------------------------
   // Manejar envío del formulario

@@ -3,6 +3,12 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getLibroById, updateLibro } from "../../services/apiServices";
 import { toast } from "react-toastify";
 
+const confToast = {
+  position: "bottom-center",
+  autoClose: 1000,
+  theme: "light",
+};
+
 function BookEdit() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -16,12 +22,6 @@ function BookEdit() {
     genero: "",
     existencias: "",
   });
-
-  const confToast = {
-    position: "bottom-center",
-    autoClose: 1000,
-    theme: "light",
-  };
 
   useEffect(() => {
     const fetchBook = async () => {
@@ -39,9 +39,23 @@ function BookEdit() {
     };
 
     fetchBook();
-  }, [id]);
+  }, [id, navigate]);
 
-  //... (validate and handleChange functions omitted for brevity, they remain same)
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setBook({ ...book, [name]: value });
+  };
+
+  const validate = () => {
+    const newErrors = {};
+    if (!book.titulo) newErrors.titulo = "El título es obligatorio";
+    if (!book.autor) newErrors.autor = "El autor es obligatorio";
+    if (!book.editorial) newErrors.editorial = "La editorial es obligatoria";
+    if (!book.anio_publicacion)
+      newErrors.anio_publicacion = "El año de publicación es obligatorio";
+    if (!book.genero) newErrors.genero = "El género es obligatorio";
+    return newErrors;
+  };
 
   //-------------------------------------------------------
   // Manejar envío del formulario

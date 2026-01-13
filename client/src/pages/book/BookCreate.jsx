@@ -1,7 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createLibroWithImage } from "../../services/apiServices";
 import { toast } from "react-toastify";
+
+const confToast = {
+  position: "bottom-center",
+  autoClose: 20000,
+  theme: "light",
+};
 
 function BookCreate() {
   const navigate = useNavigate();
@@ -16,13 +22,25 @@ function BookCreate() {
     // existencias: "",
   });
 
-  const confToast = {
-    position: "bottom-center",
-    autoClose: 20000,
-    theme: "light",
+  const handleChange = (e) => {
+    const { name, value, files } = e.target;
+    if (name === "imagen") {
+      setBook({ ...book, imagen: files[0] });
+    } else {
+      setBook({ ...book, [name]: value });
+    }
   };
 
-  //... (omitted code)
+  const validate = () => {
+    const newErrors = {};
+    if (!book.titulo) newErrors.titulo = "El título es obligatorio";
+    if (!book.autor) newErrors.autor = "El autor es obligatorio";
+    if (!book.editorial) newErrors.editorial = "La editorial es obligatoria";
+    if (!book.anio_publicacion)
+      newErrors.anio_publicacion = "El año de publicación es obligatorio";
+    if (!book.genero) newErrors.genero = "El género es obligatorio";
+    return newErrors;
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();

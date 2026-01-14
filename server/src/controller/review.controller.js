@@ -1,4 +1,4 @@
-import { getAll, getById, getByBookId, create, updateById, deleteById } from "../model/review.model.js";
+import { getAll, getById, getByBookId, getByUserId, create, updateById, deleteById } from "../model/review.model.js";
 
 export const getAllReviews = async (req, res) => {
   try {
@@ -24,6 +24,15 @@ export const getReviewById = async (req, res) => {
 export const getReviewsByBookId = async (req, res) => {
   try {
     const reviews = await getByBookId(req.params.id_libro);
+    res.status(200).json(reviews);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+export const getReviewsByUserId = async (req, res) => {
+  try {
+    const reviews = await getByUserId(req.params.id_usuario);
     res.status(200).json(reviews);
   } catch (error) {
     res.status(500).json({ message: error.message });

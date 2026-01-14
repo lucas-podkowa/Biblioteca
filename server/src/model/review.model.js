@@ -36,6 +36,22 @@ export const getByBookId = async (bookId) => {
   }
 };
 
+export const getByUserId = async (userId) => {
+  try {
+    const query = `
+      SELECT r.*, l.titulo as libro_titulo 
+      FROM resenia r
+      JOIN libro l ON r.id_libro = l.id_libro
+      WHERE r.id_usuario = $1
+    `;
+    const { rows } = await pool.query(query, [userId]);
+    return rows;
+  } catch (error) {
+    console.error(`Error fetching reviews for user with id ${userId}:`, error);
+    throw new Error(`Could not fetch reviews for user with id ${userId} from the database.`);
+  }
+};
+
 export const create = async (review) => {
   try {
     const { id_usuario, id_libro, texto_resenia, calificacion } = review;

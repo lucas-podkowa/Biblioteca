@@ -1,0 +1,79 @@
+/* ========================================
+   Review List Styles
+   ======================================== */
+
+.reviews-list {
+    margin-top: 30px;
+}
+
+.reviews-list h3 {
+    color: #1a365d;
+    font-size: 1.3rem;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.reviews-container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.review-item {
+    background: #f7fafc;
+    border-radius: 12px;
+    padding: 20px;
+    border-left: 4px solid #3d7ab8;
+}
+
+.review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.review-rating {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    font-size: 1.1rem;
+    color: #cbd5e0;
+}
+
+.star.filled {
+    color: #fbbf24;
+}
+
+.review-user {
+    color: #718096;
+    font-size: 0.85rem;
+}
+
+.review-text {
+    color: #4a5568;
+    line-height: 1.6;
+    margin: 0;
+}
+
+.no-reviews {
+    text-align: center;
+    padding: 40px 20px;
+    background: #f7fafc;
+    border-radius: 12px;
+    border: 2px dashed #e2e8f0;
+}
+
+.no-reviews p {
+    margin: 0;
+    color: #4a5568;
+}
+
+.no-reviews .hint {
+    color: #718096;
+    font-size: 0.9rem;
+    margin-top: 8px;
+}

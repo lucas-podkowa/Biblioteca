@@ -2,7 +2,16 @@ import { pool } from "../config/db.js";
 
 export const getAll = async () => {
   try {
-    const query = "SELECT * FROM prestamo";
+    const query = `
+      SELECT p.*, 
+             l.titulo as libro_titulo,
+             u.nombre as usuario_nombre,
+             u.apellido as usuario_apellido
+      FROM prestamo p
+      JOIN libro l ON p.id_libro = l.id_libro
+      JOIN usuario u ON p.id_usuario = u.id_usuario
+      ORDER BY p.fecha_prestamo DESC
+    `;
     const { rows } = await pool.query(query);
     return rows;
   } catch (error) {
@@ -62,7 +71,13 @@ export const deleteById = async (id) => {
 
 export const getByUserId = async (userId) => {
   try {
-    const query = "SELECT * FROM prestamo WHERE id_usuario = $1";
+    const query = `
+      SELECT p.*, l.titulo as libro_titulo, l.autor as libro_autor
+      FROM prestamo p
+      JOIN libro l ON p.id_libro = l.id_libro
+      WHERE p.id_usuario = $1
+      ORDER BY p.fecha_prestamo DESC
+    `;
     const { rows } = await pool.query(query, [userId]);
     return rows;
   } catch (error) {
@@ -73,11 +88,28 @@ export const getByUserId = async (userId) => {
 
 export const getByBookId = async (bookId) => {
   try {
-    const query = "SELECT * FROM prestamo WHERE id_libro = $1";
+    const query = `
+      SELECT p.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+      FROM prestamo p
+      JOIN usuario u ON p.id_usuario = u.id_usuario
+      WHERE p.id_libro = $1
+      ORDER BY p.fecha_prestamo DESC
+    `;
     const { rows } = await pool.query(query, [bookId]);
     return rows;
   } catch (error) {
     console.error(`Error fetching reserves for book with id ${bookId}:`, error);
     throw new Error(`Could not fetch reserves for book with id ${bookId} from the database.`);
+  }
+};
+
+export const getActiveByBookId = async (bookId) => {
+  try {
+    const query = "SELECT * FROM prestamo WHERE id_libro = $1 AND fecha_devolucion IS NULL";
+    const { rows } = await pool.query(query, [bookId]);
+    return rows;
+  } catch (error) {
+    console.error(`Error fetching active reserves for book with id ${bookId}:`, error);
+    throw new Error(`Could not fetch active reserves for book with id ${bookId} from the database.`);
   }
 };

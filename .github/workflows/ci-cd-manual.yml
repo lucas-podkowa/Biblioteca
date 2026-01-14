@@ -1,0 +1,162 @@
+# MANUAL Y GUÍA DE CI/CD - BIBLIOTECA
+# Este archivo es una copia comentada de ci-cd.yml para servir como material de estudio.
+
+# 1. Nombre del Workflow: Se muestra en la pestaña "Actions" de GitHub.
+name: CI/CD Pipeline (Guía Comentada)
+
+# 2. Eventos (Triggers): Define cuándo se ejecuta este pipeline automáticamente.
+on:
+  push:
+    # Se dispara cuando alguien sube cambios (push) directamente a la rama "main".
+    branches: [ "main" ]
+  pull_request:
+    # Se dispara cuando se crea o actualiza un Pull Request hacia la rama "main".
+    branches: [ "main" ]
+
+# 3. Variables de Entorno Globales: Disponibles para todos los trabajos (jobs).
+env:
+  # El registro donde guardaremos nuestras imágenes de Docker (GitHub Container Registry).
+  REGISTRY: ghcr.io
+  # El nombre de la imagen basado en el nombre del repositorio (ej: usuario/repositorio).
+  IMAGE_NAME: ${{ github.repository }}
+
+# 4. Trabajos (Jobs): Un workflow se compone de uno o más trabajos que corren en paralelo o secuencia.
+jobs:
+  
+  # --- TRABAJO 1: PRUEBAS Y LINTING ---
+  # Su objetivo es asegurar que el código cumple con las reglas y compila antes de hacer nada más.
+  test-and-lint:
+    # Se ejecuta en una máquina virtual con la última versión de Ubuntu.
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Paso 1: Descargar el código del repositorio a la máquina virtual.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # --- SECCIÓN CLIENTE (Frontend) ---
+      
+      # Paso 2: Instalar Node.js específicamente para el cliente.
+      - name: Setup Node.js (Client)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20' # Versión de Node a usar.
+          cache: 'npm'       # Habilita el caché para que las instalaciones sean más rápidas.
+          # Indica dónde está el archivo de dependencias para el caché.
+          cache-dependency-path: client/package-lock.json
+
+      # Paso 3: Instalar las dependencias del cliente.
+      - name: Install dependencies (Client)
+        run: |
+          cd client
+          npm ci # 'npm ci' es más rápido y seguro que 'npm install' en entornos de CI.
+
+      # Paso 4: Ejecutar el Linter (busca errores de estilo y posibles bugs en el código).
+      - name: Lint (Client)
+        run: |
+          cd client
+          npm run lint
+
+      # Paso 5: Verificar que la aplicación React compila/construye correctamente.
+      - name: Build Check (Client)
+        run: |
+          cd client
+          npm run build
+
+      # --- SECCIÓN SERVIDOR (Backend) ---
+      
+      # Paso 6: Configurar Node.js para el servidor.
+      - name: Setup Node.js (Server)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: server/package-lock.json
+
+      # Paso 7: Instalar dependencias del servidor.
+      - name: Install dependencies (Server)
+        run: |
+          cd server
+          npm ci
+
+  # --- TRABAJO 2: CONSTRUCCIÓN Y PUBLICACIÓN DE IMÁGENES DOCKER ---
+  # Este trabajo solo se ejecuta si el anterior (test-and-lint) terminó con éxito.
+  build-and-push-images:
+    needs: test-and-lint # Dependencia: Solo si las pruebas pasan.
+    runs-on: ubuntu-latest
+    # Condición: Solo queremos construir y subir imágenes si es un PUSH real a 'main',
+    # no queremos hacerlo en cada Pull Request para ahorrar recursos.
+    if: github.event_name == 'push'
+    
+    # Permisos necesarios para interactuar con GitHub Packages.
+    permissions:
+      contents: read     # Leer el código.
+      packages: write    # Escribir (subir) imágenes al registro.
+
+    steps:
+      # Paso 1: Volver a descargar el código.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Paso 2: Autenticarse en GitHub Container Registry.
+      - name: Log in to the Container registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          # github.actor es el usuario que inició el workflow.
+          username: ${{ github.actor }}
+          # GITHUB_TOKEN es una clave temporal que crea GitHub para el workflow.
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # --- IMAGEN DEL CLIENTE ---
+
+      # Paso 3: Generar etiquetas (tags) inteligentes (ej: 'latest' y el hash del commit).
+      - name: Extract metadata (tags, labels) for Client
+        id: meta-client
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-client
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      # Paso 4: Construir la imagen Docker y subirla (push) al registro.
+      - name: Build and push Client image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./client # Carpeta donde está el Dockerfile del cliente.
+          push: true
+          tags: ${{ steps.meta-client.outputs.tags }}
+          labels: ${{ steps.meta-client.outputs.labels }}
+          # Inyectamos variables de entorno en tiempo de construcción si es necesario.
+          build-args: |
+             VITE_API_BASE_URL=${{ secrets.VITE_API_BASE_URL }}
+
+      # --- IMAGEN DEL SERVIDOR ---
+
+      # Paso 5: Generar metadatos para la imagen del servidor.
+      - name: Extract metadata (tags, labels) for Server
+        id: meta-server
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-server
+          tags: |
+            type=raw,value=latest
+            type=sha
+
+      # Paso 6: Construir y subir la imagen del servidor.
+      - name: Build and push Server image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server # Carpeta donde está el Dockerfile del servidor.
+          push: true
+          tags: ${{ steps.meta-server.outputs.tags }}
+          labels: ${{ steps.meta-server.outputs.labels }}
+
+# --- NOTAS ADICIONALES ---
+# 1. CI (Continuous Integration): Se refiere a los pasos de 'test-and-lint', 
+#    asegurando que cada cambio sea válido.
+# 2. CD (Continuous Deployment/Delivery): Se refiere a la parte de Docker, 
+#    preparando la aplicación para ser desplegada en un servidor.
+# 3. Secrets: VITE_API_BASE_URL debe estar configurado en GitHub (Settings > Secrets and variables > Actions)
+#    para que el frontend sepa a qué URL de servidor conectarse.

@@ -6,10 +6,11 @@ import { getLibros } from "../../services/apiServices";
 
 function Books() {
   const [books, setBooks] = useState([]);
-  const [allBooks, setAllBooks] = useState([]); // todos los libros originales
+  const [allBooks, setAllBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
-
   const [loading, setLoading] = useState(true);
+
+  const userRole = Number(sessionStorage.getItem("role"));
 
   useEffect(() => {
     async function fetchBooks() {
@@ -32,61 +33,80 @@ function Books() {
     if (searchTerm.trim() === "") {
       setBooks(allBooks);
     } else {
-      const filtered = allBooks.filter((libro) =>
-        libro.titulo.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = allBooks.filter(
+        (libro) =>
+          libro.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          libro.autor.toLowerCase().includes(searchTerm.toLowerCase())
       );
       setBooks(filtered);
     }
   }, [searchTerm, allBooks]);
 
   if (loading) {
-    return <p>Cargando libros...</p>;
+    return (
+      <div className="loading-container">
+        <p>Cargando libros...</p>
+      </div>
+    );
   }
 
   return (
-    <>
+    <div className="books-page">
       <Outlet />
-      {/* añadimos el toolbar */}
+
+      <div className="books-header">
+        <h1>Catálogo de Libros</h1>
+        <p className="books-subtitle">
+          Explora nuestra colección de {allBooks.length} libros
+        </p>
+      </div>
+
+      {/* Toolbar con buscador y acciones */}
       <div className="toolbar">
         <input
           type="text"
-          placeholder="Buscar libro..."
+          placeholder="Buscar por título o autor..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="buscador"
         />
 
-        {/* añadimos la opcion de crear un nuevo libro si es administraor o bibliotecario */}
+        {/* Botón de crear libro solo para Bibliotecario/Admin */}
+        {(userRole === 1 || userRole === 2) && (
+          <Link to="/libro/crear" className="btn-crear-libro">
+            + Nuevo Libro
+          </Link>
+        )}
+      </div>
 
-        {/* hort-circuit evaluation (&&) */}
-        {(Number(sessionStorage.getItem("role")) === 1 ||
-          Number(sessionStorage.getItem("role")) === 2) && (
-            <div>
-              <Link to="/libro/crear" className="btn-crear-libro">
-                Nuevo Libro
-              </Link>
-            </div>
+      {/* Resultados de búsqueda */}
+      {searchTerm && (
+        <p className="search-results">
+          {books.length} resultado{books.length !== 1 ? "s" : ""} para "{searchTerm}"
+        </p>
+      )}
+
+      {/* Grid de libros */}
+      {books.length === 0 ? (
+        <div className="empty-state">
+          <p>No se encontraron libros</p>
+          {searchTerm && (
+            <button
+              className="btn-clear-search"
+              onClick={() => setSearchTerm("")}
+            >
+              Limpiar búsqueda
+            </button>
           )}
-
-        {/* operador ternario (condición ? verdadero : falso) */}
-        {Number(sessionStorage.getItem("role")) === 1 ||
-          Number(sessionStorage.getItem("role")) === 2 ? (
-          <div>
-            <Link to="/libro/crear" className="btn-crear-libro">
-              Nuevo Libro
-            </Link>
-          </div>
-        ) : null}
-      </div>
-
-      {/* esta parte renderiza los cards, la idea es recorrer la listra de libros
-      y pasarle cada libro individualmente apra que agregue un nuevo card */}
-      <div className="books-container">
-        {books.map((unLibro) => (
-          <BookCard key={unLibro.libro_id} book={unLibro} />
-        ))}
-      </div>
-    </>
+        </div>
+      ) : (
+        <div className="books-container">
+          {books.map((unLibro) => (
+            <BookCard key={unLibro.id_libro} book={unLibro} />
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 

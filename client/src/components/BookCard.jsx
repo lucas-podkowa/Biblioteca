@@ -1,48 +1,49 @@
 import { useNavigate, Link } from "react-router-dom";
 import "./BookCard.css";
 
-import { jwtDecode } from "jwt-decode";
-import { useEffect, useState } from "react";
-
 export default function BookCard({ book }) {
-  const [rol, setRol] = useState("");
-
-  useEffect(() => {
-    const t = sessionStorage.getItem("permiso");
-    if (t) {
-      const decoded = jwtDecode(t);
-      setRol(decoded.rol);
-    }
-  }, []);
-
   // Desestructuración del objeto recibido
-  const { id_libro, titulo, autor, editorial, image_url } = book;
+  const { id_libro, titulo, autor, editorial, image_url, existencias } = book;
   const navigate = useNavigate();
+  const userRole = Number(sessionStorage.getItem("role"));
 
-  const handleClic = () => {
+  const handleClick = () => {
     navigate(`/libros/${id_libro}`);
   };
 
   return (
-    <div onClick={handleClic} className="book-card ">
-      <img
-        onClick={handleClic}
-        src={image_url}
-        alt={titulo}
-        className="book-image"
-      />
-      <h3>{titulo}</h3>
-      <p>{autor}</p>
-      <p>{editorial}</p>
+    <div className="book-card" onClick={handleClick}>
+      <div className="book-card-image">
+        {image_url ? (
+          <img src={image_url} alt={titulo} />
+        ) : (
+          <div className="book-placeholder">📖</div>
+        )}
+        {existencias !== undefined && (
+          <span
+            className={`stock-badge ${existencias > 0 ? "available" : "unavailable"}`}
+          >
+            {existencias > 0 ? `${existencias} disp.` : "Agotado"}
+          </span>
+        )}
+      </div>
+      <div className="book-card-content">
+        <h3 className="book-title">{titulo}</h3>
+        <p className="book-author">{autor}</p>
+        {editorial && <p className="book-editorial">{editorial}</p>}
+      </div>
 
-      {rol && rol === 1 ? (
-        <li>
-          {/* <Link to="/libro/editar/{id}" className="btn-crear-libro"> */}
-          <Link to={`/libro/editar/${id_libro}`} className="btn-crear-libro">
-            Eliminar
+      {/* Opciones de gestión para Bibliotecario/Admin */}
+      {(userRole === 1 || userRole === 2) && (
+        <div className="book-card-actions" onClick={(e) => e.stopPropagation()}>
+          <Link
+            to={`/libro/editar/${id_libro}`}
+            className="btn-edit"
+          >
+            ✏️ Editar
           </Link>
-        </li>
-      ) : null}
+        </div>
+      )}
     </div>
   );
 }
